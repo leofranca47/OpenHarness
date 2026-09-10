@@ -2,7 +2,7 @@
 
 > Sistema comunitário de engenharia assistida por IA para o OpenCode.
 
-Um conjunto de **comandos** (`/init-project`, `/refine`, `/spec`, `/feature`, `/bug`, `/debug`, `/refactor`, `/review`), **agentes especializados** (`@architect`, `@investigator`, `@debugger`, `@reviewer`) e **módulos de conhecimento** (princípios, workflows, gates, profiles, TDD) que deixam o OpenCode mais previsível, metódico e respeitoso às convenções dos seus projetos.
+Um conjunto de **comandos** (`/init-project`, `/refine`, `/spec`, `/feature`, `/bug`, `/debug`, `/refactor`, `/review`, `/performance investigate`, `/performance optimize`, `/performance validate`, `/performance report`), **agentes especializados** (`@architect`, `@investigator`, `@debugger`, `@reviewer`, `@performance`) e **módulos de conhecimento** (princípios, workflows, gates, profiles, TDD) que deixam o OpenCode mais previsível, metódico e respeitoso às convenções dos seus projetos.
 
 Funciona em **qualquer stack**: PHP/Laravel, Node, Python, Go, Rust… e é especialmente afinado com **PHP, Laravel, Docker, MySQL/MariaDB, Redis, Filas, APIs** e apps legados ou modernos.
 
@@ -30,8 +30,8 @@ Funciona em **qualquer stack**: PHP/Laravel, Node, Python, Go, Rust… e é espe
 
 Um **harness comunitário** que adiciona ao OpenCode:
 
-- **7 comandos** (`/`) que executam workflows estruturados (feature, bug, debug, refactor, review, init-project, refresh-context).
-- **4 agentes** (`@`) especializados para tarefas específicas (architect, investigator, debugger, reviewer).
+- **11 comandos** (`/`) que executam workflows estruturados (feature, bug, debug, refactor, review, init-project, refresh-context, e os quatro subcommands do `/performance`: investigate, optimize, validate, report).
+- **5 agentes** (`@`) especializados para tarefas específicas (architect, investigator, debugger, reviewer, performance).
 - **Princípios globais** carregados automaticamente em toda sessão (concisão + respeito ao projeto).
 - **Módulos sob demanda** (`harness/`) carregados apenas quando você precisa, para economizar tokens.
 - **Perfis de tecnologia** com guidance específico (genérico, PHP, Laravel) — sempre subordinados ao que o projeto já faz.
@@ -380,11 +380,51 @@ Gera uma **Specification** estruturada. **Não implementa nada** — apenas espe
 
 **Características-chave:**
 - Aceita pedido direto OU herda do `/refine` na conversa
-- Estrutura **escala conforme complexidade**: SMALL (enxuto), MEDIUM (padrão), LARGE (completo)
+- Estrutura **escala conforme complexidade**: SMALL (enxuto), MEDIUM (padrão), LARGE (completa)
 - Marca fontes: `CONFIRMED` / `INFERRED FROM PROJECT` / `ASSUMPTION` / `UNKNOWN`
 - Inclui **Testing Considerations** em MEDIUM/LARGE (test level, edge cases, regression scenarios)
 - **Acceptance Criteria são testáveis** (observáveis, concretos, descrevem ator + condição + resultado)
 - Declara `Implementation Readiness`: `READY` / `READY WITH ASSUMPTIONS` / `NOT READY`
+
+---
+
+### `/performance`
+
+Engenharia de performance agnóstica de stack, baseada em evidência. Quatro subcommands
+delegam ao agent `@performance`:
+
+```text
+/performance investigate .                       # read-only — gargalos, hipóteses, plano
+/performance optimize /api/orders                # pipeline completo + benchmark before/after
+/performance validate <commit-ou-branch>         # re-medir mudança existente
+/performance report <escopo>                     # Performance Report de 13 seções
+```
+
+**Workflow:** `OBSERVE → MEASURE → LOCATE → HIPÓTESES → VALIDAR → PLANEJAR →
+IMPLEMENTAR → TESTAR → BENCHMARK → COMPARAR → ACEITAR/REJEITAR`.
+
+**Filosofia:** *Evidence before optimization.* Uma alteração só é melhoria se houver
+métrica que comprove. Stack é detectada dinamicamente a partir de manifestos
+(`composer.json`, `package.json`, `pyproject.toml`, `requirements.txt`, `go.mod`,
+`Cargo.toml`, `pom.xml`, `*.csproj`, `Gemfile`). Sentry MCP, quando conectado, é usado
+como fonte de evidência; quando ausente, o fluxo continua com `SENTRY_UNAVAILABLE`.
+
+**Quando usar:**
+- Performance degradou e você precisa de análise estruturada
+- Regressão após release precisa ser investigada e validada
+- Relatório executivo de performance para um escopo
+- Validação de que uma otimização recente realmente melhorou métricas
+
+**Modos (delegam ao `@performance`):**
+- `investigate` — read-only, sem alterações de código
+- `optimize` — pipeline completo, mudanças incrementais em `performance/<descricao>`
+- `validate` — re-medição apenas, sem novas otimizações
+- `report` — Performance Report (13 seções) read-only
+
+**Quando NÃO usar:**
+- Bug funcional com causa óbvia → `/bug`
+- Sintoma vago sem hipótese de performance → `/debug`
+- Mudança estrutural sem mudar comportamento → `/refactor`
 
 ---
 
@@ -463,6 +503,40 @@ Os agentes são invocados com `@` no TUI do OpenCode. **Todos têm autocomplete*
 
 ---
 
+### `@performance`
+
+**Para que serve:** investigar e otimizar performance com método baseado em evidência
+— detectar stack dinamicamente, classificar gargalos pela taxonomia (CPU, MEMORY,
+DATABASE, NETWORK, IO, CACHE, QUEUE, HTTP, ALGORITHM, CONCURRENCY, ARCHITECTURE, …),
+formar hipóteses com teste que refute, e produzir melhoria **mensurável** via
+benchmark before/after.
+
+**Quando usar:**
+- Performance degradou e você precisa de análise estruturada
+- Regressão após release precisa ser investigada
+- Endpoint/servidor/worker está lento e você precisa de um plano baseado em evidência
+- Validação de que uma otimização recente realmente melhorou as métricas
+
+**Exemplo:**
+```text
+@performance investigue por que /api/orders está com P95 de 4.8s
+@performance otimize o endpoint /api/orders com mudanças incrementais
+@performance valide se a otimização do último commit realmente melhorou
+@performance gere um Performance Report deste serviço
+```
+
+**Princípios:** *Evidence before optimization* · *Don't do the work* (eliminar >
+acelerar) · *Root cause* (perguntar "por quê?" até causa suficiente) · *Mudanças
+incrementais* (uma hipótese por vez).
+
+**Quando NÃO usar:**
+- Bug funcional com causa óbvia → `@debugger`
+- Mapear código desconhecido sem objetivo de performance → `@investigator`
+- Impacto arquitetural de mudança proposta → `@architect`
+- Revisão de diff sem contexto de performance → `@reviewer`
+
+---
+
 ### Quando usar command vs agent?
 
 | Você quer… | Use |
@@ -470,6 +544,7 @@ Os agentes são invocados com `@` no TUI do OpenCode. **Todos têm autocomplete*
 | Implementar uma feature do começo ao fim | `/feature` |
 | Corrigir um bug claro | `/bug` |
 | Investigar sintoma vago | `/debug` |
+| Investigar/otimizar/validar/reportar performance | `/performance` ou `@performance` |
 | Apenas explorar/entender | `@investigator` |
 | Apenas revisar | `/review` ou `@reviewer` |
 | Análise arquitetural focada | `@architect` |

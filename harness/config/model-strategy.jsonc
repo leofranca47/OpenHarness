@@ -19,12 +19,13 @@
   "_backward_compatible": "true — remover este arquivo = comportamento legacy (idêntico ao OpenHarness pré-feature).",
 
   "stages": {
-    "refine":    { "model": null, "reasoning": "low"    },
-    "spec":      { "model": null, "reasoning": "high"   },
-    "tdd_red":   { "model": null, "reasoning": "high"   },
-    "implement": { "model": null, "reasoning": "normal" },
-    "debug":     { "model": null, "reasoning": "high"   },
-    "refactor":  { "model": null, "reasoning": "low"    },
-    "review":    { "model": null, "reasoning": "high"   }
+    "refine":     { "model": null, "reasoning": "low"    },
+    "spec":       { "model": null, "reasoning": "high"   },
+    "tdd_red":    { "model": null, "reasoning": "high"   },
+    "implement":  { "model": null, "reasoning": "normal" },
+    "debug":      { "model": null, "reasoning": "high"   },
+    "refactor":   { "model": null, "reasoning": "low"    },
+    "review":     { "model": null, "reasoning": "high"   },
+    "performance":{ "model": null, "reasoning": "high"   }
   }
 }
